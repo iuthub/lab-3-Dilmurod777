@@ -1,42 +1,34 @@
 <?php 
+		include('functions.php');
+
 		$files = array();
 
 		if(isset($_REQUEST['playlist'])){
-			$songs = file("songs/".$_REQUEST['playlist']);
-			foreach($songs as $song){
-				array_push($files, 'songs/'.trim($song));
+			if(file_exists("songs/".$_REQUEST['playlist'])){
+				$songs = file("songs/".$_REQUEST['playlist']);
+				foreach($songs as $song){
+					if(trim($song)[0]!='#'){
+						$files[trim($song)] = filesize("songs/".trim($song));
+					}
+				}
+			}else{
+				print("<h1>"."Such File Does Not Exist"."</h1>");
 			}
 		}else{
-			$files = glob("songs/*.mp3");
+			$songs = glob("songs/*.mp3");
+			foreach($songs as $song){
+				$files[trim($song)] = filesize(trim($song));
+			}
 		}
-		$playlist = glob("songs/*.txt");
+		$playlist = glob("songs/*.m3u");
 
-		function getFormatedSize($size_in_bytes)
-    {
-        if ($size_in_bytes >= 1073741824)
-        {
-            $size_in_bytes = number_format($size_in_bytes / 1073741824, 2) . ' GB';
-        }
-        elseif ($size_in_bytes >= 1048576)
-        {
-            $size_in_bytes = number_format($size_in_bytes / 1048576, 2) . ' MB';
-        }
-        elseif ($size_in_bytes >= 1024)
-        {
-            $size_in_bytes = number_format($size_in_bytes / 1024, 2) . ' KB';
-        }
-        elseif ($size_in_bytes >= 1)
-        {
-            $size_in_bytes = $size_in_bytes . ' b';
-        }
-        else
-        {
-            $size_in_bytes = '0 b';
-        }
-
-        return $size_in_bytes;
-		}	
-
+		if(isset($_REQUEST['shuffle']) && $_REQUEST['shuffle']=="on" && isset($_REQUEST['bysize']) && $_REQUEST['bysize']=="on"){
+			print("<h1>"."You cannot Shuffle and Sort by Size at the same time"."</h1>");
+		}else if(isset($_REQUEST['shuffle']) && $_REQUEST['shuffle']=="on"){
+			$files = shuffle_files($files);
+		}else if(isset($_REQUEST['bysize']) && $_REQUEST['bysize']=="on"){
+			arsort($files);
+		}
 ?>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -48,20 +40,21 @@
 		<link href="viewer.css" type="text/css" rel="stylesheet" />
 	</head>
 	<body>
-		<div id="header">
 
+		<a href="music.php">List All Songs</a>
+
+		<div id="header">	
 			<h1>190M Music Playlist Viewer</h1>
 			<h2>Search Through Your Playlists and Music</h2>
 		</div>
 
-
 		<div id="listarea">
 			<ul id="musiclist">
 
-				<?php foreach($files as $file){ ?>
+				<?php foreach($files as $song=>$size){ ?>
 					<li class="mp3item">
-						<a href="<?=$file?>"><?=basename($file);?></a>
-						(<?=getFormatedSize(filesize($file));?>)
+						<a href="<?=$file?>"><?=basename($song);?></a>
+						(<?=getFormatedSize($size);?>)
 					</li>
 				<?php } ?>
 
