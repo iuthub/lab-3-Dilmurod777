@@ -60,7 +60,7 @@
 
 				<?php foreach($playlist as $file){ ?>
 					<li class="playlistitem">
-						<a href="<?=$file?>"><?=basename($file);?></a>
+						<a href="music.php?playlist=<?=basename($file)?>"><?=basename($file);?></a>
 					</li>
 				<?php } ?>
 			</ul>
